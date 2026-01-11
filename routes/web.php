@@ -34,8 +34,6 @@ Route::controller(AuthController::class)->group(function () {
         Route::get('/dashboard', [AuthController::class, 'showDashboard'])->name('admin.dashboard');
         Route::get('/report', [AuthController::class, 'showReport'])->name('admin.report');
         Route::get('/posts', [AuthController::class, 'showPosts'])->name('admin.posts.index');
-        Route::get('/report',[AuthController::class,'showReport'])->name('admin.report');
-        
     });
 });
 //return view cho post và gọi controller
@@ -43,11 +41,11 @@ Route::middleware(['auth', 'is_admin'])
     ->prefix('admin/posts')
     ->name('admin.posts.')
     ->group(function () {
-        Route::get('approve',[SalePostApprovalController::class,'index'])->name('approve');
-        Route::get('approve/{salePost}',[SalePostApprovalController::class,'show'])->name('approve.show');
-        Route::patch('approve/{salePost}/approve',[SalePostApprovalController::class,'approve'])->name('approve.approve');
-        Route::patch('approve/{salePost}/reject',[SalePostApprovalController::class,'reject'])->name('approve.reject');
-        Route::get('create',[AuthController::class,'showCreatePost'])->name('create');
+        Route::get('approve', [SalePostApprovalController::class, 'index'])->name('approve');
+        Route::get('approve/{salePost}', [SalePostApprovalController::class, 'show'])->name('approve.show');
+        Route::patch('approve/{salePost}/approve', [SalePostApprovalController::class, 'approve'])->name('approve.approve');
+        Route::patch('approve/{salePost}/reject', [SalePostApprovalController::class, 'reject'])->name('approve.reject');
+        Route::get('create', [AuthController::class, 'showCreatePost'])->name('create');
     });
 //Report review routes
 Route::middleware(['auth', 'is_admin'])
