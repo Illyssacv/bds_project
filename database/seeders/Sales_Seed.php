@@ -29,7 +29,7 @@ class Sales_Seed extends Seeder
                 'bedrooms' => $faker->numberBetween(1, 5),
                 'bathrooms' => $faker->numberBetween(1, 3),
                 'is_furnished' => $faker->boolean(),
-                'status' => $faker->boolean(80), // 80% chance of being true
+                'status' => $faker->numberBetween(0,2), // 80% chance of being true (available)
             ]);
             //
         }

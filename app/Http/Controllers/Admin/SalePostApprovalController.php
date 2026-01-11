@@ -46,7 +46,7 @@ class SalePostApprovalController extends Controller
 
     public function reject(SalePost $salePost)
     {
-        $salePost->update(['status' => 0]); // nếu bạn muốn reject -> vẫn 0 thì không khác
+        $salePost->update(['status' => 2]); // nếu bạn muốn reject -> vẫn 0 thì không khác
         // Gợi ý: nếu muốn “từ chối” riêng -> đổi schema status thành tinyint (0 pending, 1 approved, 2 rejected)
         return back()->with('success', "Đã từ chối (ẩn) tin #{$salePost->id}");
     }

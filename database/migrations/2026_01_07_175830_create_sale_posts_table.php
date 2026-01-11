@@ -25,7 +25,7 @@ return new class extends Migration
             $table->integer('bedrooms');
             $table->integer('bathrooms');
             $table->boolean('is_furnished');
-            $table->boolean('status');
+            $table->tinyInteger('status');
             $table->timestamps();
         });
     }

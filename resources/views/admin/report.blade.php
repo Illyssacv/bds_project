@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Báo cáo')
+@section('title', 'Báo cáo vi phạm')
 
 @section('content')
 <div class="container-fluid py-4">
@@ -8,237 +8,294 @@
     {{-- Header --}}
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
         <div>
-            <h4 class="mb-1 fw-bold">Báo cáo & Thống kê</h4>
-            <div class="text-muted">Tổng quan hoạt động hệ thống theo thời gian</div>
+            <h4 class="mb-1 fw-bold">Báo cáo vi phạm</h4>
+            <div class="text-muted">Quản lý các báo cáo vi phạm từ người dùng</div>
         </div>
 
-        {{-- Filter --}}
-        <form class="d-flex flex-wrap align-items-end gap-2" method="GET" action="">
+        <form method="GET" action="" class="d-flex flex-wrap align-items-end gap-2">
             <div>
-                <label class="form-label mb-1 small text-muted">Từ ngày</label>
-                <input type="date" name="from" class="form-control"
-                       value="{{ request('from') }}">
-            </div>
-            <div>
-                <label class="form-label mb-1 small text-muted">Đến ngày</label>
-                <input type="date" name="to" class="form-control"
-                       value="{{ request('to') }}">
+                <label class="form-label mb-1 small text-muted">Từ khoá</label>
+                <input type="text" name="q" class="form-control" value="{{ request('q') }}"
+                       placeholder="Lý do, mô tả, user, tiêu đề tin...">
             </div>
 
-            <button class="btn btn-primary">
-                <i class="bi bi-funnel"></i> Lọc
-            </button>
+            <div>
+                <label class="form-label mb-1 small text-muted">Trạng thái</label>
+                <select name="status" class="form-select">
+                    <option value="">Tất cả</option>
+                    <option value="{{ request('q') }}" {{ (string)$status==='0' ? 'selected' : '' }}>Mới</option>
+                    <option value="{{ request('q') }}" {{ (string)$status==='1' ? 'selected' : '' }}>Đang xử lý</option>
+                    <option value="{{ request('q') }}" {{ (string)$status==='2' ? 'selected' : '' }}>Đã xử lý</option>
+                    <option value="{{ request('q') }}" {{ (string)$status==='3' ? 'selected' : '' }}>Từ chối</option>
+                </select>
+            </div>
 
-            <a class="btn btn-outline-secondary" href="{{ url()->current() }}">
-                <i class="bi bi-arrow-counterclockwise"></i> Reset
-            </a>
+            <button class="btn btn-primary"><i class="bi bi-funnel"></i> Lọc</button>
+            <a class="btn btn-outline-secondary" href="{{ url()->current() }}">Reset</a>
         </form>
     </div>
 
-    {{-- Stat cards --}}
-    <div class="row g-3 mb-4">
+    @if(session('success'))
+        <div class="alert alert-success d-flex align-items-center gap-2">
+            <i class="bi bi-check-circle"></i><div>{{ session('success') }}</div>
+        </div>
+    @endif
+
+    {{-- Stats --}}
+    <div class="row g-3 mb-3">
         <div class="col-12 col-md-6 col-xl-3">
-            <div class="card shadow-sm border-0 h-100">
+            <div class="card shadow-sm border-0">
                 <div class="card-body d-flex align-items-center justify-content-between">
                     <div>
-                        <div class="text-muted small">Tổng người dùng</div>
-                        <div class="fs-4 fw-bold">{{ $totalUsers ?? 0 }}</div>
-                        <div class="small text-muted mt-1">Cập nhật theo dữ liệu hiện tại</div>
+                        <div class="text-muted small">Mới</div>
+                        <div class="fs-4 fw-bold">{{ $countNew ?? 0 }}</div>
                     </div>
-                    <div class="rounded-3 p-3 bg-light">
-                        <i class="bi bi-people fs-3"></i>
-                    </div>
+                    <div class="rounded-3 p-3 bg-light"><i class="bi bi-flag fs-3"></i></div>
                 </div>
             </div>
         </div>
-
         <div class="col-12 col-md-6 col-xl-3">
-            <div class="card shadow-sm border-0 h-100">
+            <div class="card shadow-sm border-0">
                 <div class="card-body d-flex align-items-center justify-content-between">
                     <div>
-                        <div class="text-muted small">Bài đăng bán</div>
-                        <div class="fs-4 fw-bold">{{ $totalSalePosts ?? 0 }}</div>
-                        <div class="small text-muted mt-1">Tổng số bài đăng bán</div>
+                        <div class="text-muted small">Đang xử lý</div>
+                        <div class="fs-4 fw-bold">{{ $countProcessing ?? 0 }}</div>
                     </div>
-                    <div class="rounded-3 p-3 bg-light">
-                        <i class="bi bi-house-door fs-3"></i>
-                    </div>
+                    <div class="rounded-3 p-3 bg-light"><i class="bi bi-hourglass-split fs-3"></i></div>
                 </div>
             </div>
         </div>
-
         <div class="col-12 col-md-6 col-xl-3">
-            <div class="card shadow-sm border-0 h-100">
+            <div class="card shadow-sm border-0">
                 <div class="card-body d-flex align-items-center justify-content-between">
                     <div>
-                        <div class="text-muted small">Bài đăng thuê</div>
-                        <div class="fs-4 fw-bold">{{ $totalRentPosts ?? 0 }}</div>
-                        <div class="small text-muted mt-1">Tổng số bài đăng thuê</div>
+                        <div class="text-muted small">Đã xử lý</div>
+                        <div class="fs-4 fw-bold">{{ $countDone ?? 0 }}</div>
                     </div>
-                    <div class="rounded-3 p-3 bg-light">
-                        <i class="bi bi-building fs-3"></i>
-                    </div>
+                    <div class="rounded-3 p-3 bg-light"><i class="bi bi-patch-check fs-3"></i></div>
                 </div>
             </div>
         </div>
-
         <div class="col-12 col-md-6 col-xl-3">
-            <div class="card shadow-sm border-0 h-100">
+            <div class="card shadow-sm border-0">
                 <div class="card-body d-flex align-items-center justify-content-between">
                     <div>
-                        <div class="text-muted small">Liên hệ / Tin nhắn</div>
-                        <div class="fs-4 fw-bold">{{ $totalContacts ?? 0 }}</div>
-                        <div class="small text-muted mt-1">Số lượt liên hệ</div>
+                        <div class="text-muted small">Từ chối</div>
+                        <div class="fs-4 fw-bold">{{ $countRejected ?? 0 }}</div>
                     </div>
-                    <div class="rounded-3 p-3 bg-light">
-                        <i class="bi bi-chat-left-text fs-3"></i>
-                    </div>
+                    <div class="rounded-3 p-3 bg-light"><i class="bi bi-x-octagon fs-3"></i></div>
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- Main content --}}
-    <div class="row g-3">
-        {{-- Chart placeholder --}}
-        <div class="col-12 col-xl-8">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-header bg-white border-0 d-flex align-items-center justify-content-between">
-                    <div>
-                        <div class="fw-semibold">Biểu đồ hoạt động</div>
-                        <div class="text-muted small">Gợi ý: số bài đăng / user mới theo ngày</div>
-                    </div>
-                    <div class="dropdown">
-                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
-                            Tuỳ chọn
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="#">Bài đăng theo ngày</a></li>
-                            <li><a class="dropdown-item" href="#">User mới theo ngày</a></li>
-                            <li><a class="dropdown-item" href="#">Liên hệ theo ngày</a></li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="card-body">
-                    {{-- Bạn có thể thay div này bằng Chart.js sau --}}
-                    <div class="border rounded-3 p-4 text-center text-muted" style="min-height: 280px;">
-                        <div class="mb-2"><i class="bi bi-bar-chart fs-1"></i></div>
-                        <div class="fw-semibold">Chưa có biểu đồ</div>
-                        <div class="small">Có thể tích hợp Chart.js để hiển thị dữ liệu theo ngày</div>
-                    </div>
-                </div>
-            </div>
+    {{-- Table --}}
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white border-0 d-flex align-items-center justify-content-between">
+            <div class="fw-semibold">Danh sách báo cáo</div>
+            <div class="text-muted small">Nhấp “Xem” để mở chi tiết</div>
         </div>
 
-        {{-- Quick actions + latest --}}
-        <div class="col-12 col-xl-4">
-            <div class="card shadow-sm border-0 mb-3">
-                <div class="card-header bg-white border-0">
-                    <div class="fw-semibold">Tác vụ nhanh</div>
-                </div>
-                <div class="card-body d-grid gap-2">
-                    <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-primary">
-                        <i class="bi bi-speedometer2"></i> Về Dashboard
-                    </a>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width:80px;">ID</th>
+                            <th>Lý do</th>
+                            <th>Tin bị báo cáo</th>
+                            <th>Người báo cáo</th>
+                            <th class="text-center" style="width:140px;">Trạng thái</th>
+                            <th class="text-end" style="width:190px;">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($reports as $r)
+                            @php
+                                $badge = match((int)$r->status) {
+                                    0 => 'bg-warning text-dark',
+                                    1 => 'bg-info text-dark',
+                                    2 => 'bg-success',
+                                    3 => 'bg-secondary',
+                                    default => 'bg-light text-dark',
+                                };
+                                $statusText = match((int)$r->status) {
+                                    0 => 'Mới',
+                                    1 => 'Đang xử lý',
+                                    2 => 'Đã xử lý',
+                                    3 => 'Từ chối',
+                                    default => '---',
+                                };
+                            @endphp
 
-                    {{-- Nếu route chưa có thì bạn cứ đổi lại sau --}}
-                    <a href="{{ route('admin.posts.index', [], false) ?? '#' }}" class="btn btn-outline-secondary">
-                        <i class="bi bi-card-list"></i> Quản lý tin đăng
-                    </a>
+                            <tr>
+                                <td class="fw-semibold">#{{ $r->id }}</td>
 
-                    <a href="#" class="btn btn-outline-secondary">
-                        <i class="bi bi-people"></i> Quản lý người dùng
-                    </a>
-                </div>
-            </div>
-
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-white border-0 d-flex align-items-center justify-content-between">
-                    <div class="fw-semibold">User mới</div>
-                    <span class="badge bg-light text-dark">{{ isset($latestUsers) ? count($latestUsers) : 0 }}</span>
-                </div>
-                <div class="card-body p-0">
-                    <div class="list-group list-group-flush">
-                        @forelse(($latestUsers ?? []) as $u)
-                            <div class="list-group-item d-flex align-items-center justify-content-between">
-                                <div class="d-flex align-items-center gap-2">
-                                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center"
-                                         style="width:40px;height:40px;">
-                                        <i class="bi bi-person"></i>
+                                <td>
+                                    <div class="fw-semibold">{{ $r->reason }}</div>
+                                    <div class="small text-muted text-truncate" style="max-width: 420px;">
+                                        {{ $r->detail }}
                                     </div>
-                                    <div>
-                                        <div class="fw-semibold">{{ $u->name ?? 'User' }}</div>
-                                        <div class="small text-muted">{{ $u->email ?? '' }}</div>
+                                    <div class="small text-muted mt-1">
+                                        {{ optional($r->created_at)->format('d/m/Y H:i') }}
                                     </div>
-                                </div>
-                                <div class="small text-muted">
-                                    {{ optional($u->created_at)->format('d/m/Y') }}
-                                </div>
-                            </div>
+                                </td>
+
+                                <td>
+                                    <div class="fw-semibold">{{ $r->salePost->title ?? '---' }}</div>
+                                    <div class="small text-muted">{{ $r->salePost->address ?? '' }}</div>
+                                    <div class="small text-muted mt-1">
+                                        Chủ tin: <span class="text-dark">{{ $r->salePost->user->name ?? '---' }}</span>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div class="fw-semibold">{{ $r->reporter->name ?? '---' }}</div>
+                                    <div class="small text-muted">{{ $r->reporter->email ?? '' }}</div>
+                                </td>
+
+                                <td class="text-center">
+                                    <span class="badge {{ $badge }}">{{ $statusText }}</span>
+                                </td>
+
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-secondary"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#reportModal-{{ $r->id }}">
+                                        <i class="bi bi-eye"></i> Xem
+                                    </button>
+
+                                    @if((int)$r->status === 0)
+                                        <form class="d-inline" method="POST" action="{{ route('admin.report.processing', $r->id) }}">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button class="btn btn-sm btn-outline-primary">
+                                                Nhận xử lý
+                                            </button>
+                                        </form>
+                                    @endif
+
+                                    {{-- Modal --}}
+                                    <div class="modal fade" id="reportModal-{{ $r->id }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <div>
+                                                        <h5 class="modal-title mb-1">Report #{{ $r->id }}</h5>
+                                                        <div class="text-muted small">{{ $r->reason }}</div>
+                                                    </div>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+
+                                                <div class="modal-body">
+                                                    <div class="row g-3">
+                                                        <div class="col-12">
+                                                            <div class="p-3 border rounded-3 bg-light">
+                                                                <div class="fw-semibold mb-1">Mô tả vi phạm</div>
+                                                                <div class="text-muted" style="white-space: pre-line;">
+                                                                    {{ $r->detail ?? '---' }}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="col-12 col-md-6">
+                                                            <div class="p-3 border rounded-3">
+                                                                <div class="fw-semibold mb-2">Tin bị báo cáo</div>
+                                                                <div class="small text-muted">Tiêu đề:
+                                                                    <span class="text-dark">{{ $r->salePost->title ?? '---' }}</span>
+                                                                </div>
+                                                                <div class="small text-muted">Địa chỉ:
+                                                                    <span class="text-dark">{{ $r->salePost->address ?? '---' }}</span>
+                                                                </div>
+                                                                <div class="small text-muted">Giá:
+                                                                    <span class="text-dark">
+                                                                        {{ isset($r->salePost->price) ? number_format((float)$r->salePost->price, 0, ',', '.') . ' VNĐ' : '---' }}
+                                                                    </span>
+                                                                </div>
+                                                                <div class="small text-muted">Trạng thái tin:
+                                                                    <span class="text-dark">{{ ($r->salePost->status ?? 0) ? 'Đang hiển thị' : 'Đang ẩn/chờ duyệt' }}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="col-12 col-md-6">
+                                                            <div class="p-3 border rounded-3">
+                                                                <div class="fw-semibold mb-2">Người báo cáo</div>
+                                                                <div class="small text-muted">Tên:
+                                                                    <span class="text-dark">{{ $r->reporter->name ?? '---' }}</span>
+                                                                </div>
+                                                                <div class="small text-muted">Email:
+                                                                    <span class="text-dark">{{ $r->reporter->email ?? '---' }}</span>
+                                                                </div>
+                                                                <div class="small text-muted">SĐT:
+                                                                    <span class="text-dark">{{ $r->reporter->phone_number ?? '---' }}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="col-12">
+                                                            <label class="form-label">Ghi chú admin</label>
+                                                            <textarea form="resolveForm-{{ $r->id }}" name="admin_note" rows="3"
+                                                                      class="form-control"
+                                                                      placeholder="Ghi chú xử lý...">{{ old('admin_note', $r->admin_note) }}</textarea>
+                                                            <div class="form-text">Ghi chú sẽ lưu vào report.</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="modal-footer">
+                                                    <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng</button>
+
+                                                    <form id="resolveForm-{{ $r->id }}" method="POST" action="{{ route('admin.report.resolve', $r->id) }}">
+                                                        @csrf
+                                                        @method('PATCH')
+                                                        <button class="btn btn-success">
+                                                            <i class="bi bi-check2"></i> Đánh dấu đã xử lý
+                                                        </button>
+                                                    </form>
+
+                                                    <form method="POST" action="{{ route('admin.report.hide_post', $r->id) }}">
+                                                        @csrf
+                                                        @method('PATCH')
+                                                        <button class="btn btn-danger"
+                                                                onclick="return confirm('Ẩn tin này và đánh dấu report đã xử lý?')">
+                                                            <i class="bi bi-eye-slash"></i> Ẩn tin
+                                                        </button>
+                                                    </form>
+
+                                                    <form method="POST" action="{{ route('admin.report.reject', $r->id) }}">
+                                                        @csrf
+                                                        @method('PATCH')
+                                                        <input type="hidden" name="admin_note" value="{{ $r->admin_note }}">
+                                                        <button class="btn btn-outline-dark"
+                                                                onclick="return confirm('Từ chối report này?')">
+                                                            Từ chối report
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {{-- End modal --}}
+                                </td>
+                            </tr>
                         @empty
-                            <div class="list-group-item text-muted">Chưa có dữ liệu.</div>
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-5">
+                                    <div class="mb-2"><i class="bi bi-flag fs-1"></i></div>
+                                    Chưa có báo cáo vi phạm.
+                                </td>
+                            </tr>
                         @endforelse
-                    </div>
-                </div>
+                    </tbody>
+                </table>
             </div>
         </div>
 
-        {{-- Top posts table --}}
-        <div class="col-12">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-white border-0 d-flex align-items-center justify-content-between">
-                    <div>
-                        <div class="fw-semibold">Top tin đăng nổi bật</div>
-                        <div class="text-muted small">Gợi ý: sort theo views / liên hệ / ngày tạo</div>
-                    </div>
-                    <button class="btn btn-sm btn-outline-secondary" onclick="window.print()">
-                        <i class="bi bi-printer"></i> In báo cáo
-                    </button>
-                </div>
-
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th style="width:70px;">#</th>
-                                    <th>Tiêu đề</th>
-                                    <th>Loại</th>
-                                    <th>Chủ tin</th>
-                                    <th class="text-end">Lượt xem</th>
-                                    <th class="text-end">Ngày tạo</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse(($topPosts ?? []) as $index => $p)
-                                    <tr>
-                                        <td>{{ $index + 1 }}</td>
-                                        <td class="fw-semibold">{{ $p->title ?? '---' }}</td>
-                                        <td>
-                                            <span class="badge bg-light text-dark">
-                                                {{ $p->type ?? 'post' }}
-                                            </span>
-                                        </td>
-                                        <td>{{ $p->user->name ?? '---' }}</td>
-                                        <td class="text-end">{{ $p->views ?? 0 }}</td>
-                                        <td class="text-end">{{ optional($p->created_at)->format('d/m/Y') }}</td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="6" class="text-center text-muted py-4">
-                                            Chưa có dữ liệu top posts.
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-            </div>
+        <div class="card-footer bg-white border-0">
+            {{ $reports->links() }}
         </div>
-
     </div>
+
 </div>
 @endsection

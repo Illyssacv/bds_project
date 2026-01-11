@@ -177,7 +177,7 @@
             </a>
 
             <a class="side-link {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}"
-                href="{{ route('admin.reports') }}">
+                href="{{ route('admin.report') }}">
                 <i class="bi bi-flag"></i>
                 <span>Báo cáo vi phạm</span>
             </a>

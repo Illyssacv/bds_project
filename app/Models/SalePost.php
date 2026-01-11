@@ -26,7 +26,7 @@ class SalePost extends Model
         'bedrooms' => 'integer',
         'bathrooms' => 'integer',
         'is_furnished' => 'boolean',
-        'status' => 'integer',
+        'status' => 'boolean',
     ];
     public function user()
     {
